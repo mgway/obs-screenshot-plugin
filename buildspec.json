@@ -1,21 +1,21 @@
 {
     "dependencies": {
         "obs-studio": {
-            "version": "30.2.3",
+            "version": "31.1.2",
             "repository": "https://github.com/obsproject/obs-studio.git",
             "branch": "master",
-            "hash": "144599fbff18e348652ccadfc3ca08794a03d970"
+            "hash": "7778070cbd8e4689d91d90068091ced467c5fdef"
         },
         "prebuilt": {
-            "version": "2024-09-12",
+            "version": "2025-08-23",
             "baseUrl": "https://github.com/obsproject/obs-deps/releases/download",
             "label": "Pre-built obs-deps",
             "hashes": {
-                "macos-x86_64": "1c59d943ccdb755fbf8ea370bd51c16cf1ba440b3de11312c05125e772a0455f",
-                "macos-arm64": "69bc0848ca93f23134c46d59e4c41496370a439e3661890d5150a13db3c1f021",
-                "macos-universal": "c857b211ee378772994b632036e1e5befe66b37e85286cb8e3cefc1435d5220a",
-                "windows-x64": "d4a4f194591766891ad3c0b267deec3c4b85239c8fe557273559927456aeedbb",
-                "windows-x86": "b7f1c46f0206d724f2edf73f74201e921a2652fa3f465ed47b949df08b6d48fe"
+                "macos-x86_64": "a84e850ff7773ab45e3ce0f25bb34799f4df46f3bfce28c8341030a4e2a48505",
+                "macos-arm64": "09cbeb3cbf4fbb9e58e4cf4ca030a724fb1be41d2d7851c8b356f476e04544db",
+                "macos-universal": "9403bb43fb0a9bb215739a5659ca274fe884dbbbcd22bd9ca781c961fb041c42",
+                "windows-x64": "8de229cff6f1981508c0eb646b35e644633a5855787b9f5d3b90ae2aeb87ffc1",
+                "windows-x86": "fb3c68b75911f292b3206e346053638db1c73605957207445a0a92b33ab5e00a"
             }
         },
         "qt5": {
@@ -35,14 +35,14 @@
             }
         },
         "qt6": {
-            "version": "2024-09-12",
+            "version": "2025-08-23",
             "baseUrl": "https://github.com/obsproject/obs-deps/releases/download",
             "label": "Pre-built Qt6",
             "hashes": {
-                "macos-x86_64": "537a7cffb0a9e9804d01d6b5da4144f73bf6cca7d03f711781568850d92c6250",
-                "macos-arm64": "29e89e717691c5a8b72f673fdfa3ebd220b347406315a977f019aab9f5ed52ba",
-                "macos-universal": "34a2de6b7f4d4d58fc5a15a4dba49a61d81a4045d0cedfc1a1f08c0dfb8047cf",
-                "windows-x64": "4d15ce13dbb0a8a2cabcce5ae0da5e80ee589b482a61b2025378465c1da32c4f",
+                "macos-x86_64": "5edc5b6d5ae08f54933eb4b352c11794271195414471ea93fedd4505f0f57fe8",
+                "macos-arm64": "ed70bb04a5ffc4c820d691e7f1d9913462bc4e018383e98c5548876f6dec0304",
+                "macos-universal": "990f11638b80a4509e14e8c315f6e4caa0861e37fcd3113a256fbff835ffca29",
+                "windows-x64": "c62e82483bc7c0bf199e8ac3220c66a85a6e8a0cd69a05b6d44f873b830e415f",
                 "windows-x86": "def9f9aa929eda36a10bf969c8dfef6f6ecac71bc30c4ef579063250899f93d3"
             },
             "pdb-hashes": {
