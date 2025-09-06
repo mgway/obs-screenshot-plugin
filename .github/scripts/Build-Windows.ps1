@@ -1,15 +1,9 @@
 [CmdletBinding()]
 param(
+    [ValidateSet('x64')]
+    [string] $Target = 'x64',
     [ValidateSet('Debug', 'RelWithDebInfo', 'Release', 'MinSizeRel')]
-    [string] $Configuration = 'RelWithDebInfo',
-    [ValidateSet('x86', 'x64')]
-    [string] $Target,
-    [ValidateSet('Visual Studio 17 2022', 'Visual Studio 16 2019')]
-    [string] $CMakeGenerator,
-    [switch] $SkipAll,
-    [switch] $SkipBuild,
-    [switch] $SkipDeps,
-    [switch] $SkipUnpack
+    [string] $Configuration = 'RelWithDebInfo'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -19,14 +13,21 @@ if ( $DebugPreference -eq 'Continue' ) {
     $InformationPreference = 'Continue'
 }
 
-if ( $PSVersionTable.PSVersion -lt '7.0.0' ) {
-    Write-Warning 'The obs-deps PowerShell build script requires PowerShell Core 7. Install or upgrade your PowerShell version: https://aka.ms/pscore6'
+if ( $env:CI -eq $null ) {
+    throw "Package-Windows.ps1 requires CI environment"
+}
+
+if ( ! ( [System.Environment]::Is64BitOperatingSystem ) ) {
+    throw "Packaging script requires a 64-bit system to build and run."
+}
+
+if ( $PSVersionTable.PSVersion -lt '7.2.0' ) {
+    Write-Warning 'The packaging script requires PowerShell Core 7. Install or upgrade your PowerShell version: https://aka.ms/pscore6'
     exit 2
 }
 
-function Build {
+function Package {
     trap {
-        Pop-Location -Stack BuildTemp -ErrorAction 'SilentlyContinue'
         Write-Error $_
         exit 2
     }
@@ -37,7 +38,7 @@ function Build {
 
     $UtilityFunctions = Get-ChildItem -Path $PSScriptRoot/utils.pwsh/*.ps1 -Recurse
 
-    foreach($Utility in $UtilityFunctions) {
+    foreach( $Utility in $UtilityFunctions ) {
         Write-Debug "Loading $($Utility.FullName)"
         . $Utility.FullName
     }
@@ -46,56 +47,26 @@ function Build {
     $ProductName = $BuildSpec.name
     $ProductVersion = $BuildSpec.version
 
-    $script:DepsVersion = ''
-    $script:QtVersion = '5'
-    $script:VisualStudioVersion = ''
-    $script:PlatformSDK = '10.0.18363.657'
+    $OutputName = "${ProductName}-${ProductVersion}-windows-${Target}"
 
-    Setup-Host
-
-    if ( $CmakeGenerator -eq '' ) {
-        $CmakeGenerator = $script:VisualStudioVersion
+    $RemoveArgs = @{
+        ErrorAction = 'SilentlyContinue'
+        Path = @(
+            "${ProjectRoot}/release/${ProductName}-*-windows-*.zip"
+        )
     }
 
-    (Get-Content -Path ${ProjectRoot}/CMakeLists.txt -Raw) `
-        -replace "project\((.*) VERSION (.*)\)", "project(${ProductName} VERSION ${ProductVersion})" `
-        | Out-File -Path ${ProjectRoot}/CMakeLists.txt
+    Remove-Item @RemoveArgs
 
-    Setup-Obs
-
-    Push-Location -Stack BuildTemp
-    if ( ! ( ( $SkipAll ) -or ( $SkipBuild ) ) ) {
-        Ensure-Location $ProjectRoot
-
-        $DepsPath = "plugin-deps-${script:DepsVersion}-qt${script:QtVersion}-${script:Target}"
-        $CmakeArgs = @(
-            '-G', $CmakeGenerator
-            "-DCMAKE_SYSTEM_VERSION=${script:PlatformSDK}"
-            "-DCMAKE_GENERATOR_PLATFORM=$(if (${script:Target} -eq "x86") { "Win32" } else { "x64" })"
-            "-DCMAKE_BUILD_TYPE=${Configuration}"
-            "-DCMAKE_PREFIX_PATH:PATH=$(Resolve-Path -Path "${ProjectRoot}/../obs-build-dependencies/${DepsPath}")"
-            "-DQT_VERSION=${script:QtVersion}"
-        )
-
-        Log-Debug "Attempting to configure OBS with CMake arguments: $($CmakeArgs | Out-String)"
-        Log-Information "Configuring ${ProductName}..."
-        Invoke-External cmake -S . -B build_${script:Target} @CmakeArgs
-
-        $CmakeArgs = @(
-            '--config', "${Configuration}"
-        )
-
-        if ( $VerbosePreference -eq 'Continue' ) {
-            $CmakeArgs+=('--verbose')
-        }
-
-        Log-Information "Building ${ProductName}..."
-        Invoke-External cmake --build "build_${script:Target}" @CmakeArgs
+    Log-Group "Archiving ${ProductName}..."
+    $CompressArgs = @{
+        Path = (Get-ChildItem -Path "${ProjectRoot}/release/${Configuration}" -Exclude "${OutputName}*.*")
+        CompressionLevel = 'Optimal'
+        DestinationPath = "${ProjectRoot}/release/${OutputName}.zip"
+        Verbose = ($Env:CI -ne $null)
     }
-    Log-Information "Install ${ProductName}..."
-    Invoke-External cmake --install "build_${script:Target}" --prefix "${ProjectRoot}/release" @CmakeArgs
-
-    Pop-Location -Stack BuildTemp
+    Compress-Archive -Force @CompressArgs
+    Log-Group
 }
 
-Build
+Package
