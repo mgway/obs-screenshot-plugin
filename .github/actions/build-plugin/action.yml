@@ -65,7 +65,6 @@ runs:
         $BuildArgs = @{
           Target = '${{ inputs.target }}'
           Configuration = '${{ inputs.config }}'
-          CMakeGenerator = '${{ inputs.visualStudio }}'
         }
 
         if ( ( Test-Path env:CI ) -and ( Test-Path env:RUNNER_DEBUG ) ) {
